@@ -11,7 +11,8 @@
     "start": "node dist/server.js",
     "test": "vitest run",
     "migrate": "node-pg-migrate --envPath .env -j sql -m migrations",
-    "migrate:create": "node-pg-migrate -j sql -m migrations create"
+    "migrate:create": "node-pg-migrate -j sql -m migrations create",
+    "seed": "tsx src/db/seed.ts"
   },
   "license": "ISC",
   "dependencies": {
