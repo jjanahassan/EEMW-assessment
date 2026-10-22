@@ -1,0 +1,323 @@
+@baseUrl = http://localhost:4000
+
+###############################################################
+# BASICS
+###############################################################
+
+### Health -> 200 with api, database and redis all "ok"
+GET {{baseUrl}}/health
+
+### Departments -> 200, four departments (Finance 1, Legal 2, HR 3, Engineering 4)
+GET {{baseUrl}}/api/departments
+
+
+###############################################################
+# AUTH
+###############################################################
+
+### Login as admin -> 200 { user, token }
+# @name admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@company.com", "password": "Password123!" }
+
+### Current user -> 200
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{admin.response.body.token}}
+
+### Register a new user -> 201 on the first run, 409 on every run after that
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Test User", "email": "testtest@company.com", "password": "Password123!", "departmentId": 1 }
+
+### Register with a weak password -> 400 with per-field details
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Test User", "email": "weak2@company.com", "password": "abc", "departmentId": 1 }
+
+### Register with an unknown department -> 400
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Test User", "email": "dept@company.com", "password": "Password123!", "departmentId": 999 }
+
+### Register sending a role -> 201, but the user is still an "employee"
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Sneaky", "email": "sneaky@company.com", "password": "Password123!", "departmentId": 1, "role": "admin" }
+
+### Login with a wrong password -> 401 "Invalid email or password"
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@company.com", "password": "WrongPass1" }
+
+### Current user with no token -> 401
+GET {{baseUrl}}/api/auth/me
+
+### Current user with a tampered token -> 401
+GET {{baseUrl}}/api/auth/me
+Authorization: Bearer {{admin.response.body.token}}x
+
+
+###############################################################
+# LOGINS FOR THE DEMO USERS (send these before the document requests)
+###############################################################
+
+### Omar, Finance employee (id 1)
+# @name omar
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "finance.employee@company.com", "password": "Password123!" }
+
+### Farida, Finance manager (id 1)
+# @name farida
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "finance.manager@company.com", "password": "Password123!" }
+
+### Laila, Legal manager (id 2)
+# @name laila
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "legal.manager@company.com", "password": "Password123!" }
+
+### Hana, HR employee (id 3)
+# @name hana
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "hr.employee@company.com", "password": "Password123!" }
+
+### Ziad, Engineering employee (id 4)
+# @name ziad
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "engineer@company.com", "password": "Password123!" }
+
+
+###############################################################
+# DOCUMENT UPLOAD
+###############################################################
+
+### Upload a restricted document as Omar, shared with Legal -> 201
+### allowedDepartmentIds should be [1, 2] (Legal plus Omar's own Finance)
+# @name upload
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Annual Finance Report
+------FormBoundary
+Content-Disposition: form-data; name="description"
+
+Audited figures for the year
+------FormBoundary
+Content-Disposition: form-data; name="tags"
+
+Finance, Report
+------FormBoundary
+Content-Disposition: form-data; name="visibility"
+
+restricted
+------FormBoundary
+Content-Disposition: form-data; name="departmentIds"
+
+2
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+### Upload with no token -> 401
+POST {{baseUrl}}/api/documents
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+No token
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+### Upload with a missing title -> 400 with details
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="tags"
+
+Finance
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+### Upload with no file part -> 400
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+No file attached
+------FormBoundary--
+
+### Upload a disallowed file type (.exe) -> 415
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Not allowed
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="malware.exe"
+Content-Type: application/octet-stream
+
+< ./samples/malware.exe
+------FormBoundary--
+
+### Upload text renamed to .pdf (content does not match) -> 415
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Fake PDF
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="fake.pdf"
+Content-Type: application/pdf
+
+< ./samples/fake.pdf
+------FormBoundary--
+
+### Public document with departmentIds -> 400
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Public but with departments
+------FormBoundary
+Content-Disposition: form-data; name="visibility"
+
+public
+------FormBoundary
+Content-Disposition: form-data; name="departmentIds"
+
+2
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+### Restricted to a department that does not exist -> 400
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Unknown department
+------FormBoundary
+Content-Disposition: form-data; name="visibility"
+
+restricted
+------FormBoundary
+Content-Disposition: form-data; name="departmentIds"
+
+999
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+### Eleven tags -> 400 ("At most 10 tags")
+POST {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="title"
+
+Too many tags
+------FormBoundary
+Content-Disposition: form-data; name="tags"
+
+t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report.pdf"
+Content-Type: application/pdf
+
+< ./samples/report.pdf
+------FormBoundary--
+
+
+###############################################################
+# DOCUMENT DETAIL AND PERMISSIONS
+# (send the "upload" request above first; its id is reused below)
+###############################################################
+
+### As Omar, the uploader -> 200
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{omar.response.body.token}}
+
+### As Farida, same department (Finance) -> 200
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{farida.response.body.token}}
+
+### As Laila, Legal (listed department) -> 200
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{laila.response.body.token}}
+
+### As admin -> 200
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{admin.response.body.token}}
+
+### As Hana, HR (not listed) -> 403
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{hana.response.body.token}}
+
+### As Ziad, Engineering (not listed) -> 403
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{ziad.response.body.token}}
+
+### A valid but unknown id -> 404
+GET {{baseUrl}}/api/documents/3f2a8c1e-5b4d-4e6f-9a7b-1c2d3e4f5a6b
+Authorization: Bearer {{omar.response.body.token}}
+
+### A malformed id -> 400
+GET {{baseUrl}}/api/documents/abc
+Authorization: Bearer {{omar.response.body.token}}
