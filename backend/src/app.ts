@@ -8,6 +8,8 @@ import { pool } from "./config/db";
 import { redis } from "./config/redis";
 import { logger } from "./utils/logger";
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { authRouter } from "./modules/auth/auth.routes";
+import { departmentsRouter } from "./modules/departments/departments.routes";
 
 export function createApp() {
   const app = express();
@@ -25,9 +27,8 @@ export function createApp() {
     res.status(status.database === "ok" ? 200 : 503).json(status);
   });
 
-  // feature routers will be mounted here:
-  // app.use("/api/auth", authRouter);
-  // app.use("/api/documents", documentsRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/departments", departmentsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler); // must be last

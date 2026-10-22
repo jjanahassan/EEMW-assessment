@@ -40,3 +40,9 @@ export class UnsupportedMediaTypeError extends AppError {
     super(415, message, "UNSUPPORTED_MEDIA_TYPE");
   }
 }
+
+export class ConflictError extends AppError {
+  constructor(message = "Resource already exists") {
+    super(409, message, "CONFLICT");
+  }
+}

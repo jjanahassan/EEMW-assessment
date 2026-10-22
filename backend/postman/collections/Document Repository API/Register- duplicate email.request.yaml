@@ -1,0 +1,5 @@
+$kind: http-request
+name: "Register: duplicate email"
+url: ""
+method: GET
+order: 12000

@@ -1,0 +1,5 @@
+$kind: http-request
+name: "Register: bad department"
+url: ""
+method: GET
+order: 9000
