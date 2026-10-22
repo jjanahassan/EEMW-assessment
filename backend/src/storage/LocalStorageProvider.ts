@@ -33,4 +33,11 @@ export class LocalStorageProvider implements StorageProvider {
   async delete(key: string): Promise<void> {
     await fs.promises.rm(this.resolveKey(key), { force: true });
   }
+
+    async copy(sourceKey: string, destKey: string): Promise<void> {
+    const source = this.resolveKey(sourceKey);
+    const dest = this.resolveKey(destKey);
+    await fs.promises.mkdir(path.dirname(dest), { recursive: true });
+    await fs.promises.copyFile(source, dest, fs.constants.COPYFILE_EXCL);
+  }
 }
