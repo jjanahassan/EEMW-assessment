@@ -1,5 +1,6 @@
 import { Pool, PoolClient } from "pg";
 import { env } from "./env";
+import type { QueryResult } from "pg";
 
 export const pool = new Pool({ connectionString: env.DATABASE_URL, max: 10 });
 
@@ -16,4 +17,9 @@ export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>)
   } finally {
     client.release();
   }
+}
+
+// Anything that can run a query: the pool, or a client inside a transaction
+export interface Queryable {
+  query(text: string, values?: unknown[]): Promise<QueryResult<any>>;
 }
