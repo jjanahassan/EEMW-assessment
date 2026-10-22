@@ -127,4 +127,8 @@ export class DocumentRepository {
       [documentId, departmentIds],
     );
   }
+
+    async incrementDownloadCount(documentId: string): Promise<void> {
+    await this.db.query(`UPDATE documents SET download_count = download_count + 1 WHERE id = $1`, [documentId]);
+  }
 }
