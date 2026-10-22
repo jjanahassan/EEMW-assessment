@@ -9,6 +9,9 @@ export function notFoundHandler(_req: Request, res: Response) {
 }
 
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
+  // If a download fails halfway the headers are already sent; let Express close the connection
+  if (res.headersSent) return _next(err);
+  
   if (err instanceof ZodError) {
     return res.status(400).json({
       error: {

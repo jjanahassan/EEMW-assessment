@@ -12,19 +12,26 @@ import { SearchCache } from "./modules/documents/document.search.cache";
 import { TagRepository } from "./modules/tags/tag.repository";
 import { LocalStorageProvider } from "./storage/LocalStorageProvider";
 import type { StorageProvider } from "./storage/StorageProvider";
+import { DocumentVersionRepository } from "./modules/documents/document.version.repository";
 
 export const userRepository = new UserRepository();
 export const departmentRepository = new DepartmentRepository();
 export const tagRepository = new TagRepository();
 export const documentRepository = new DocumentRepository();
+export const documentVersionRepository = new DocumentVersionRepository();
 
 export const storage: StorageProvider = new LocalStorageProvider(env.UPLOAD_DIR); // swap point for S3
 export const eventBus = new EventBus();
 export const searchCache = new SearchCache(redis);
 
 export const authService = new AuthService(userRepository, departmentRepository);
-export const documentService = new DocumentService(documentRepository, departmentRepository, storage, eventBus);
-export const documentSearchService = new DocumentSearchService(new DocumentSearchRepository(), searchCache);
+export const documentService = new DocumentService(
+  documentRepository,
+  documentVersionRepository,
+  departmentRepository,
+  storage,
+  eventBus,
+);export const documentSearchService = new DocumentSearchService(new DocumentSearchRepository(), searchCache);
 
 // Observer: any document change invalidates cached searches
 eventBus.subscribe(async (event) => {
