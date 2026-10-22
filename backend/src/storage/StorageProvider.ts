@@ -7,4 +7,6 @@ export interface StorageProvider {
   getStream(key: string): Promise<Readable>;
   /** Remove a stored file. Must not fail if it doesn't exist. */
   delete(key: string): Promise<void>;
+  /** Duplicate a stored file under a new key (used when restoring an old version). */
+  copy(sourceKey: string, destKey: string): Promise<void>;
 }

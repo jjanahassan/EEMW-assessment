@@ -1,6 +1,10 @@
 import { logger } from "../utils/logger";
 
-export type DomainEvent = { type: "document.uploaded"; documentId: string; userId: string };
+export type DomainEvent = {
+  type: "document.uploaded" | "document.versionAdded" | "document.versionRestored";
+  documentId: string;
+  userId: string;
+};
 
 type Handler = (event: DomainEvent) => void | Promise<void>;
 

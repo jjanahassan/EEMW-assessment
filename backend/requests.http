@@ -396,3 +396,134 @@ Authorization: Bearer {{omar.response.body.token}}
 
 ### No token -> 401
 GET {{baseUrl}}/api/documents
+
+###############################################################
+# VERSIONS, DOWNLOAD AND VIEW (send the "upload" request first)
+###############################################################
+
+### Version history -> 1 version, isCurrent true
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{omar.response.body.token}}
+
+### Add version 2 as Omar (uploader) -> 201, currentVersion.versionNumber 2
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="changeNote"
+
+Updated Q3 figures
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report-v2.pdf"
+Content-Type: application/pdf
+
+< ./samples/report-v2.pdf
+------FormBoundary--
+
+### Same file again -> 409 "identical to the current version"
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report-v2.pdf"
+Content-Type: application/pdf
+
+< ./samples/report-v2.pdf
+------FormBoundary--
+
+### Laila (Legal) can view the document but is not allowed to change it -> 403
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{laila.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report-v3.pdf"
+Content-Type: application/pdf
+
+< ./samples/report-v3.pdf
+------FormBoundary--
+
+### Farida (manager of the uploader's department) adds version 3 -> 201
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{farida.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="changeNote"
+
+Reviewed by finance management
+------FormBoundary
+Content-Disposition: form-data; name="file"; filename="report-v3.pdf"
+Content-Type: application/pdf
+
+< ./samples/report-v3.pdf
+------FormBoundary--
+
+### No file -> 400
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{omar.response.body.token}}
+Content-Type: multipart/form-data; boundary=----FormBoundary
+
+------FormBoundary
+Content-Disposition: form-data; name="changeNote"
+
+forgot the file
+------FormBoundary--
+
+### History now -> 3 versions, newest first, version 3 isCurrent
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{omar.response.body.token}}
+
+### Restore version 1 -> 201, creates version 4 with change note "Restored from version 1"
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions/1/restore
+Authorization: Bearer {{omar.response.body.token}}
+
+### Restore the version that is already current (4 is a copy of 1, so restore 4) -> 409
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions/4/restore
+Authorization: Bearer {{omar.response.body.token}}
+
+### Restore a version that does not exist -> 404
+POST {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions/99/restore
+Authorization: Bearer {{omar.response.body.token}}
+
+### Download the current version -> 200, Content-Disposition: attachment
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download
+Authorization: Bearer {{omar.response.body.token}}
+
+### Download version 2 -> 200
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download?version=2
+Authorization: Bearer {{omar.response.body.token}}
+
+### Download an unknown version -> 404
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download?version=99
+Authorization: Bearer {{omar.response.body.token}}
+
+### Invalid version -> 400
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download?version=abc
+Authorization: Bearer {{omar.response.body.token}}
+
+### View inline (PDF) -> 200, Content-Disposition: inline
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/view
+Authorization: Bearer {{omar.response.body.token}}
+
+### Conditional request with the file's checksum -> 304 Not Modified, no body
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download?version=1
+Authorization: Bearer {{omar.response.body.token}}
+If-None-Match: "{{upload.response.body.document.currentVersion.checksumSha256}}"
+
+### Hana (HR, no access) cannot download -> 403
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download
+Authorization: Bearer {{hana.response.body.token}}
+
+### Hana cannot read the history either -> 403
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/versions
+Authorization: Bearer {{hana.response.body.token}}
+
+### No token -> 401
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}/download
+
+### Download count increased, updatedAt did not change because of downloads
+GET {{baseUrl}}/api/documents/{{upload.response.body.document.id}}
+Authorization: Bearer {{omar.response.body.token}}

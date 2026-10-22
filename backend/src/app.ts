@@ -34,6 +34,8 @@ export function createApp() {
   app.use("/api/documents", documentsRouter);
   app.use("/api/tags", tagsRouter);
 
+  app.use(cors({ origin: env.CORS_ORIGIN, exposedHeaders: ["Content-Disposition", "X-Cache"] }));
+
   app.use(notFoundHandler);
   app.use(errorHandler); // must be last
   return app;

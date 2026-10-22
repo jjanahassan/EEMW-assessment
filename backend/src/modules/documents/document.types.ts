@@ -40,3 +40,27 @@ export interface SearchResult {
   total: number;
   totalPages: number;
 }
+
+export interface VersionSummary {
+  id: string;
+  versionNumber: number;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  checksumSha256: string;
+  changeNote: string | null;
+  uploadedBy: { id: string; name: string };
+  createdAt: Date;
+  isCurrent: boolean;
+}
+
+// what the service needs in order to stream a file
+export interface VersionFile {
+  id: string;
+  versionNumber: number;
+  fileName: string;
+  storageKey: string;
+  mimeType: string;
+  sizeBytes: number;
+  checksumSha256: string;
+}
