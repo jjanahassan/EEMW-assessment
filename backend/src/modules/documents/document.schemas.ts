@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ALLOWED_EXTENSIONS } from "./fileTypes";
 
 // Multipart text fields arrive as strings. Accept "a, b" or a repeated field (tags=a&tags=b).
 const toArray = (v: unknown) => {
@@ -47,3 +48,31 @@ export const uploadDocumentSchema = z
 export type UploadDocumentInput = z.infer<typeof uploadDocumentSchema>;
 
 export const documentIdSchema = z.uuid("Invalid document id");
+
+const lowerUnique = (list: string[]) => [...new Set(list.map((s) => s.toLowerCase()))];
+
+export const searchQuerySchema = z
+  .object({
+    q: z.string().trim().max(200).optional().transform((v) => v || undefined),
+    tags: z.preprocess(toArray, z.array(z.string().max(50)).max(10)).transform(lowerUnique),
+    tagMode: z.enum(["all", "any"]).default("all"),
+    uploader: z.string().trim().max(100).optional().transform((v) => v || undefined),
+    fileType: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .refine((v) => ALLOWED_EXTENSIONS.includes(v), "Unsupported file type")
+      .optional(),
+    from: z.coerce.date().optional(),
+    to: z.coerce.date().optional(),
+    sort: z.enum(["relevance", "newest", "oldest", "title", "downloads"]).optional(),
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(50).default(10),
+  })
+  .superRefine((data, ctx) => {
+    if (data.from && data.to && data.from > data.to) {
+      ctx.addIssue({ code: "custom", path: ["from"], message: "'from' must not be after 'to'" });
+    }
+  });
+
+export type SearchParams = z.infer<typeof searchQuerySchema>;

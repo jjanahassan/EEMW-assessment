@@ -27,3 +27,16 @@ export interface DocumentDetail {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export interface SearchItem extends DocumentDetail {
+  // [[ and ]] mark the matched words; the frontend renders them as <mark>
+  highlight: { title: string; snippet: string | null } | null;
+}
+
+export interface SearchResult {
+  items: SearchItem[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}

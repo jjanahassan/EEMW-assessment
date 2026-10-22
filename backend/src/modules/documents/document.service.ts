@@ -11,12 +11,14 @@ import type { DocumentRepository } from "./document.repository";
 import type { UploadDocumentInput } from "./document.schemas";
 import type { DocumentDetail, UploadedFile } from "./document.types";
 import { ALLOWED_FILE_TYPES } from "./fileTypes";
+import type { EventBus } from "../../events/eventBus";
 
 export class DocumentService {
   constructor(
     private documents: DocumentRepository,
     private departments: DepartmentRepository,
     private storage: StorageProvider,
+    private events: EventBus,
   ) {}
 
   async upload(user: AuthUser, input: UploadDocumentInput, file: UploadedFile): Promise<DocumentDetail> {
@@ -79,6 +81,8 @@ export class DocumentService {
       await this.storage.delete(storageKey).catch(() => {});
       throw err;
     }
+    
+    await this.events.publish({ type: "document.uploaded", documentId, userId: user.id });
 
     return (await this.documents.findById(documentId))!;
   }
