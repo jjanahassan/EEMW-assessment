@@ -321,3 +321,78 @@ Authorization: Bearer {{omar.response.body.token}}
 ### A malformed id -> 400
 GET {{baseUrl}}/api/documents/abc
 Authorization: Bearer {{omar.response.body.token}}
+
+###############################################################
+# SEARCH (run `npm run seed:documents` first)
+###############################################################
+
+### Everything Omar can see (Finance) -> total 4
+GET {{baseUrl}}/api/documents
+Authorization: Bearer {{omar.response.body.token}}
+
+### Same list as Hana (HR) -> total 2 (restricted Finance and Legal documents are hidden)
+GET {{baseUrl}}/api/documents
+Authorization: Bearer {{hana.response.body.token}}
+
+### Full-text with highlight -> "Leave Policy"; title_highlight contains [[Leave]]
+GET {{baseUrl}}/api/documents?q=leave
+Authorization: Bearer {{omar.response.body.token}}
+
+### Typo tolerance -> still finds "Annual Finance Report"
+GET {{baseUrl}}/api/documents?q=finnance
+Authorization: Bearer {{omar.response.body.token}}
+
+### Partial word -> "Employee Leave Policy"
+GET {{baseUrl}}/api/documents?q=polic
+Authorization: Bearer {{omar.response.body.token}}
+
+### A search can never leak: Hana searching "finance" -> 0 results
+GET {{baseUrl}}/api/documents?q=finance
+Authorization: Bearer {{hana.response.body.token}}
+
+### Tag filter -> 1 result (Finance report)
+GET {{baseUrl}}/api/documents?tags=finance
+Authorization: Bearer {{omar.response.body.token}}
+
+### Tags, any-mode -> HR policy and technical guide (2)
+GET {{baseUrl}}/api/documents?tags=hr,technical&tagMode=any
+Authorization: Bearer {{omar.response.body.token}}
+
+### Tags, all-mode -> 0 (no document has both)
+GET {{baseUrl}}/api/documents?tags=hr,technical&tagMode=all
+Authorization: Bearer {{omar.response.body.token}}
+
+### By uploader name -> "Employee Leave Policy"
+GET {{baseUrl}}/api/documents?uploader=hana
+Authorization: Bearer {{omar.response.body.token}}
+
+### File type -> all PDFs (4)
+GET {{baseUrl}}/api/documents?fileType=pdf
+Authorization: Bearer {{omar.response.body.token}}
+
+### Sort by title, page 2 of size 2 -> "Employee Leave Policy", "Vendor Contract Template"
+GET {{baseUrl}}/api/documents?sort=title&limit=2&page=2
+Authorization: Bearer {{omar.response.body.token}}
+
+### Date range (use today's date)
+GET {{baseUrl}}/api/documents?from=2026-10-01&to=2026-12-31
+Authorization: Bearer {{omar.response.body.token}}
+
+### Tag autocomplete -> ["Finance"]
+GET {{baseUrl}}/api/tags?q=fi
+Authorization: Bearer {{omar.response.body.token}}
+
+### Validation -> 400 each
+GET {{baseUrl}}/api/documents?limit=1000
+Authorization: Bearer {{omar.response.body.token}}
+
+###
+GET {{baseUrl}}/api/documents?sort=banana
+Authorization: Bearer {{omar.response.body.token}}
+
+###
+GET {{baseUrl}}/api/documents?page=0
+Authorization: Bearer {{omar.response.body.token}}
+
+### No token -> 401
+GET {{baseUrl}}/api/documents
