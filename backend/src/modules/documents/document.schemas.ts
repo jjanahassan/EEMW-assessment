@@ -76,3 +76,13 @@ export const searchQuerySchema = z
   });
 
 export type SearchParams = z.infer<typeof searchQuerySchema>;
+
+export const addVersionSchema = z.object({
+  changeNote: z.string().trim().max(500).optional().transform((v) => v || undefined),
+});
+
+export const versionQuerySchema = z.object({
+  version: z.coerce.number().int().min(1).optional(),
+});
+
+export const versionNumberSchema = z.coerce.number().int().min(1, "Invalid version number");

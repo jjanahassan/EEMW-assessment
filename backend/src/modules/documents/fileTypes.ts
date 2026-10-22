@@ -23,3 +23,6 @@ export const ALLOWED_FILE_TYPES: Record<string, AllowedFileType> = {
 };
 
 export const ALLOWED_EXTENSIONS = Object.keys(ALLOWED_FILE_TYPES);
+
+// Safe to display inline in a browser (none of these can execute script)
+export const PREVIEWABLE_MIME_TYPES = new Set(["application/pdf", "image/png", "image/jpeg", "text/plain"]);
