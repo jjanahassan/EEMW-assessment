@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessDocument } from "../src/modules/documents/document.policy";
+import { canAccessDocument, canModifyDocument } from "../src/modules/documents/document.policy";
 import type { AuthUser } from "../src/modules/auth/auth.types";
 
 const user = (over: Partial<AuthUser> = {}): AuthUser => ({
@@ -27,5 +27,22 @@ describe("canAccessDocument", () => {
   });
   it("blocks other departments, even managers", () => {
     expect(canAccessDocument(user({ departmentId: 1, role: "manager" }), doc())).toBe(false);
+  });
+});
+
+describe("canModifyDocument", () => {
+  const d = { uploader: { id: "owner", name: "O", departmentId: 3 } };
+  it("lets an admin modify anything", () => {
+    expect(canModifyDocument(user({ role: "admin" }), d)).toBe(true);
+  });
+  it("lets the uploader modify their own document", () => {
+    expect(canModifyDocument(user({ id: "owner" }), d)).toBe(true);
+  });
+  it("lets a manager of the uploader's department modify it", () => {
+    expect(canModifyDocument(user({ role: "manager", departmentId: 3 }), d)).toBe(true);
+  });
+  it("blocks managers of other departments and ordinary colleagues", () => {
+    expect(canModifyDocument(user({ role: "manager", departmentId: 1 }), d)).toBe(false);
+    expect(canModifyDocument(user({ role: "employee", departmentId: 3 }), d)).toBe(false);
   });
 });
