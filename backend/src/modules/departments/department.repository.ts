@@ -18,4 +18,10 @@ export class DepartmentRepository {
     const { rowCount } = await this.db.query(`SELECT 1 FROM departments WHERE id = $1`, [id]);
     return (rowCount ?? 0) > 0;
   }
+
+    async countExisting(ids: number[]): Promise<number> {
+    if (ids.length === 0) return 0;
+    const { rows } = await this.db.query(`SELECT count(*)::int AS n FROM departments WHERE id = ANY($1::int[])`, [ids]);
+    return rows[0].n;
+  }
 }
