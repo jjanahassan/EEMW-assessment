@@ -1,22 +1,25 @@
 import { pool, Queryable } from "../../config/db";
 import { DocumentDetail, Visibility } from "./document.types";
 
-const DETAIL_SELECT = `
-  SELECT d.id, d.title, d.description, d.visibility, d.download_count, d.created_at, d.updated_at,
-         u.id AS uploader_id, u.name AS uploader_name, u.department_id AS uploader_department_id,
-         v.id AS version_id, v.version_number, v.file_name, v.mime_type, v.size_bytes,
-         v.checksum_sha256, v.created_at AS version_created_at,
-         COALESCE((SELECT array_agg(t.name ORDER BY t.name)
-                   FROM document_tags dt JOIN tags t ON t.id = dt.tag_id
-                   WHERE dt.document_id = d.id), '{}'::text[]) AS tags,
-         COALESCE((SELECT array_agg(dp.department_id ORDER BY dp.department_id)
-                   FROM document_permissions dp
-                   WHERE dp.document_id = d.id), '{}'::int[]) AS allowed_department_ids
-  FROM documents d
+export const DETAIL_COLUMNS = `
+  d.id, d.title, d.description, d.visibility, d.download_count, d.created_at, d.updated_at,
+  u.id AS uploader_id, u.name AS uploader_name, u.department_id AS uploader_department_id,
+  v.id AS version_id, v.version_number, v.file_name, v.mime_type, v.size_bytes,
+  v.checksum_sha256, v.created_at AS version_created_at,
+  COALESCE((SELECT array_agg(t.name ORDER BY t.name)
+            FROM document_tags dt JOIN tags t ON t.id = dt.tag_id
+            WHERE dt.document_id = d.id), '{}'::text[]) AS tags,
+  COALESCE((SELECT array_agg(dp.department_id ORDER BY dp.department_id)
+            FROM document_permissions dp
+            WHERE dp.document_id = d.id), '{}'::int[]) AS allowed_department_ids`;
+
+export const DETAIL_JOINS = `
   JOIN users u ON u.id = d.uploader_id
   LEFT JOIN document_versions v ON v.id = d.current_version_id`;
 
-function toDetail(r: any): DocumentDetail {
+const DETAIL_SELECT = `SELECT ${DETAIL_COLUMNS} FROM documents d ${DETAIL_JOINS}`;
+
+export function toDetail(r: any): DocumentDetail {
   return {
     id: r.id,
     title: r.title,
