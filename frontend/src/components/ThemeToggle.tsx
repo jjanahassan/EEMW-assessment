@@ -1,37 +1,24 @@
 "use client";
 
-import { type LucideIcon, Monitor, Moon, Sun } from "lucide-react";
-import { type ThemePreference, useThemePreference } from "@/lib/theme";
-import { cn } from "@/lib/utils";
-
-const OPTIONS: { value: ThemePreference; label: string; icon: LucideIcon }[] = [
-  { value: "light", label: "Light", icon: Sun },
-  { value: "system", label: "System", icon: Monitor },
-  { value: "dark", label: "Dark", icon: Moon },
-];
+import { Moon, Sun } from "lucide-react";
+import { setThemePreference, useResolvedTheme } from "@/lib/theme";
 
 export function ThemeToggle() {
-  const [preference, setPreference] = useThemePreference();
+  const theme = useResolvedTheme();
+  const next = theme === "dark" ? "light" : "dark";
 
   return (
-    <div role="radiogroup" aria-label="Color theme" className="inline-flex rounded-lg border border-line bg-sunken p-0.5">
-      {OPTIONS.map(({ value, label, icon: Icon }) => (
-        <button
-          key={value}
-          type="button"
-          role="radio"
-          aria-checked={preference === value}
-          aria-label={label}
-          title={label}
-          onClick={() => setPreference(value)}
-          className={cn(
-            "rounded-md p-1.5 transition",
-            preference === value ? "bg-surface text-accent shadow-sm" : "text-muted hover:text-fg",
-          )}
-        >
-          <Icon className="h-4 w-4" />
-        </button>
-      ))}
-    </div>
+    <button
+      type="button"
+      onClick={() => setThemePreference(next)}
+      aria-label={`Switch to ${next} mode`}
+      title={`Switch to ${next} mode`}
+      className="rounded-lg border border-line bg-sunken p-2 text-muted transition hover:text-fg focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+    >
+      {/* Both icons are rendered and CSS picks one from the "dark" class on <html>,
+          so the right icon shows from the first paint, with no flicker */}
+      <Sun className="hidden h-4 w-4 dark:block" />
+      <Moon className="h-4 w-4 dark:hidden" />
+    </button>
   );
 }

@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { THEME_KEY } from "./constants";
 
 export type ThemePreference = "light" | "dark" | "system";
+export type ResolvedTheme = "light" | "dark";
 
 const listeners = new Set<() => void>();
 
@@ -47,9 +48,10 @@ export function setThemePreference(preference: ThemePreference) {
   listeners.forEach((listener) => listener());
 }
 
-const serverSnapshot = (): ThemePreference => "system";
+// What is on screen right now. The head script and applyTheme keep the "dark" class in sync.
+const readResolved = (): ResolvedTheme => (document.documentElement.classList.contains("dark") ? "dark" : "light");
+const serverResolved = (): ResolvedTheme => "light";
 
-// The preference lives outside React (localStorage), so it is read with useSyncExternalStore
-export function useThemePreference(): [ThemePreference, typeof setThemePreference] {
-  return [useSyncExternalStore(subscribe, readPreference, serverSnapshot), setThemePreference];
+export function useResolvedTheme(): ResolvedTheme {
+  return useSyncExternalStore(subscribe, readResolved, serverResolved);
 }
