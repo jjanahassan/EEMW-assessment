@@ -36,7 +36,7 @@ export function NewVersionForm({ documentId, onDone }: { documentId: string; onD
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-line bg-surface p-4 shadow-sm">
       <h3 className="font-medium">Upload a new version</h3>
       {error && <Alert>{error}</Alert>}
       <Field label="File" htmlFor="version-file">
@@ -44,7 +44,7 @@ export function NewVersionForm({ documentId, onDone }: { documentId: string; onD
           id="version-file"
           type="file"
           onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-          className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100"
+          className="block w-full text-sm text-muted file:mr-4 file:rounded-md file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-medium file:text-accent hover:file:bg-highlight"
         />
       </Field>
       <Field label="What changed? (optional)" htmlFor="version-note">

@@ -1,1 +1,105 @@
 @import "tailwindcss";
+
+/* class-based dark mode: the theme script puts "dark" on <html> */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+  --page: #f3f1e8;
+  --surface: #fdfcf7;
+  --sunken: #eae7d8;
+  --line: #dcd8c6;
+  --line-strong: #c4bfa8;
+  --fg: #16281f;
+  --muted: #566558;
+  --subtle: #7f8c80;
+  --accent: #1f6b4f;
+  --accent-hover: #185741;
+  --on-accent: #ffffff;
+  --accent-soft: #e3eedf;
+  --accent-soft-fg: #1f5a42;
+  --highlight: #c9e6d2;
+  --warm-soft: #f4e2d6;
+  --warm-fg: #8a3f1c;
+  --danger-solid: #b42318;
+  --on-danger: #ffffff;
+  --danger-soft: #fbe4e1;
+  --danger-fg: #9b2c2c;
+  --danger-line: #f2c4bf;
+  --success-soft: #e1f2e6;
+  --success-fg: #1e5e39;
+  --success-line: #bfe0c9;
+}
+
+.dark {
+  color-scheme: dark;
+  --page: #0c1511;
+  --surface: #142019;
+  --sunken: #1b2b22;
+  --line: #243a2e;
+  --line-strong: #36523f;
+  --fg: #e6f1e9;
+  --muted: #93ab9b;
+  --subtle: #6f877a;
+  --accent: #3fbf8a;
+  --accent-hover: #58d0a0;
+  --on-accent: #06150f;
+  --accent-soft: #1b3a2c;
+  --accent-soft-fg: #9eddbc;
+  --highlight: #1f5a40;
+  --warm-soft: #3a2418;
+  --warm-fg: #f0b999;
+  --danger-solid: #f0705f;
+  --on-danger: #1f0705;
+  --danger-soft: #3a1816;
+  --danger-fg: #f6b3ad;
+  --danger-line: #5c2622;
+  --success-soft: #12301f;
+  --success-fg: #9eddb6;
+  --success-line: #1f4a31;
+}
+
+/* Tailwind utilities: bg-surface, text-fg, border-line, bg-highlight, ... */
+@theme inline {
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-sunken: var(--sunken);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-on-accent: var(--on-accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-soft-fg: var(--accent-soft-fg);
+  --color-highlight: var(--highlight);
+  --color-warm-soft: var(--warm-soft);
+  --color-warm-fg: var(--warm-fg);
+  --color-danger-solid: var(--danger-solid);
+  --color-on-danger: var(--on-danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-line: var(--danger-line);
+  --color-success-soft: var(--success-soft);
+  --color-success-fg: var(--success-fg);
+  --color-success-line: var(--success-line);
+}
+
+/* "base" is the lowest layer, so utility classes always win over these */
+@layer base {
+  html {
+    background-color: var(--page);
+  }
+  h1,
+  h2,
+  h3 {
+    font-family: ui-serif, Georgia, Cambria, "Times New Roman", serif;
+    letter-spacing: -0.01em;
+  }
+  ::selection {
+    background-color: var(--highlight);
+    color: var(--fg);
+  }
+}

@@ -14,7 +14,7 @@ import { formatBytes, validateFile } from "@/lib/utils";
 
 const ACCEPT = ALLOWED_EXTENSIONS.map((e) => `.${e}`).join(",");
 const fileInputClass =
-  "block w-full text-sm text-slate-600 file:mr-4 file:rounded-md file:border-0 file:bg-indigo-50 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-700 hover:file:bg-indigo-100";
+  "block w-full text-sm text-muted file:mr-4 file:rounded-md file:border-0 file:bg-accent-soft file:px-4 file:py-2 file:text-sm file:font-medium file:text-accent hover:file:bg-highlight";
 
 function UploadForm() {
   const { user } = useAuth();
@@ -82,7 +82,7 @@ function UploadForm() {
   return (
     <div className="mx-auto max-w-2xl">
       <h1 className="text-2xl font-semibold">Upload a document</h1>
-      <form onSubmit={onSubmit} noValidate className="mt-4 space-y-5 rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <form onSubmit={onSubmit} noValidate className="mt-4 space-y-5 rounded-lg border border-line bg-surface p-6 shadow-sm">
         {error && <Alert>{error}</Alert>}
 
         <Field label="Title" htmlFor="title" error={errors.title}>
@@ -98,44 +98,44 @@ function UploadForm() {
         </Field>
 
         <fieldset>
-          <legend className="mb-1 text-sm font-medium text-slate-700">Who can see this document?</legend>
+          <legend className="mb-1 text-sm font-medium text-fg">Who can see this document?</legend>
           <div className="space-y-2">
             <label className="flex items-start gap-2 text-sm">
               <input type="radio" name="visibility" checked={visibility === "public"} onChange={() => setVisibility("public")} className="mt-1" />
               <span>
                 <span className="font-medium">Everyone</span>
-                <span className="block text-xs text-slate-500">Any logged-in employee can find and read it.</span>
+                <span className="block text-xs text-muted">Any logged-in employee can find and read it.</span>
               </span>
             </label>
             <label className="flex items-start gap-2 text-sm">
               <input type="radio" name="visibility" checked={visibility === "restricted"} onChange={() => setVisibility("restricted")} className="mt-1" />
               <span>
                 <span className="font-medium">Selected departments only</span>
-                <span className="block text-xs text-slate-500">Your own department always keeps access.</span>
+                <span className="block text-xs text-muted">Your own department always keeps access.</span>
               </span>
             </label>
           </div>
 
           {visibility === "restricted" && (
-            <div className="mt-3 grid grid-cols-2 gap-2 rounded-md bg-slate-50 p-3">
+            <div className="mt-3 grid grid-cols-2 gap-2 rounded-md bg-sunken p-3">
               {departments.map((d) => {
                 const own = d.id === user?.departmentId;
                 return (
                   <label key={d.id} className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={own || departmentIds.includes(d.id)} disabled={own} onChange={(e) => toggleDepartment(d.id, e.target.checked)} />
                     {d.name}
-                    {own && <span className="text-xs text-slate-500">(yours)</span>}
+                    {own && <span className="text-xs text-muted">(yours)</span>}
                   </label>
                 );
               })}
             </div>
           )}
-          {errors.departmentIds && <p className="mt-1 text-xs text-red-600">{errors.departmentIds}</p>}
+          {errors.departmentIds && <p className="mt-1 text-xs text-danger-fg">{errors.departmentIds}</p>}
         </fieldset>
 
         <Field label="File" htmlFor="file" error={errors.file} hint={`${ALLOWED_EXTENSIONS.join(", ")}. Up to ${MAX_FILE_SIZE_MB} MB.`}>
           <input id="file" type="file" accept={ACCEPT} onChange={(e) => setFile(e.target.files?.[0] ?? null)} className={fileInputClass} />
-          {file && <p className="mt-1 text-xs text-slate-500">{file.name} ({formatBytes(file.size)})</p>}
+          {file && <p className="mt-1 text-xs text-muted">{file.name} ({formatBytes(file.size)})</p>}
         </Field>
 
         <div className="flex justify-end gap-3">

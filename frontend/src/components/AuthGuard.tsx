@@ -1,15 +1,14 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, type ReactNode } from "react";
+import { Suspense, useEffect, type ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { FullPageSpinner } from "./ui";
 
-// Wrap every page that needs a logged-in user
-export function AuthGuard({ children }: { children: ReactNode }) {
+function Guard({ children }: { children: ReactNode }) {
   const { status } = useAuth();
   const router = useRouter();
-  const pathname = usePathname();
+  const pathname = usePathname(); // runtime data, which is why Guard sits inside a Suspense boundary
 
   useEffect(() => {
     if (status === "anonymous") {
@@ -20,4 +19,13 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   if (status !== "authenticated") return <FullPageSpinner />;
   return <>{children}</>;
+}
+
+// Wrap every page that needs a logged-in user
+export function AuthGuard({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<FullPageSpinner />}>
+      <Guard>{children}</Guard>
+    </Suspense>
+  );
 }

@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatus] = useState<Status>("loading");
 
-  useEffect(() => {
+    useEffect(() => {
     let cancelled = false;
     const onExpired = () => {
       setUser(null);
@@ -31,20 +31,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     window.addEventListener(AUTH_EXPIRED_EVENT, onExpired);
 
-    if (tokenStorage.get()) {
-      authApi
-        .me()
-        .then(({ user: me }) => {
-          if (cancelled) return;
-          setUser(me);
-          setStatus("authenticated");
-        })
-        .catch(() => {
-          if (!cancelled) setStatus("anonymous"); // a 401 already cleared the token in the API client
-        });
-    } else {
-      setStatus("anonymous");
-    }
+    // One async path for both cases: no token simply means no user
+    const session: Promise<User | null> = tokenStorage.get()
+      ? authApi.me().then((r) => r.user).catch(() => null)
+      : Promise.resolve(null);
+
+    session.then((me) => {
+      if (cancelled) return;
+      setUser(me);
+      setStatus(me ? "authenticated" : "anonymous");
+    });
 
     return () => {
       cancelled = true;

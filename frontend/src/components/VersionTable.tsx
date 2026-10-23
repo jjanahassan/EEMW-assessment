@@ -14,9 +14,9 @@ interface Props {
 
 export function VersionTable({ versions, canModify, busy, onDownload, onPreview, onRestore }: Props) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white shadow-sm">
-      <table className="min-w-full divide-y divide-slate-200 text-sm">
-        <thead className="bg-slate-50 text-left text-xs font-medium uppercase tracking-wide text-slate-500">
+    <div className="overflow-x-auto rounded-lg border border-line bg-surface shadow-sm">
+      <table className="min-w-full divide-y divide-line text-sm">
+        <thead className="bg-sunken text-left text-xs font-medium uppercase tracking-wide text-muted">
           <tr>
             <th className="px-4 py-3">Version</th>
             <th className="px-4 py-3">File</th>
@@ -25,7 +25,7 @@ export function VersionTable({ versions, canModify, busy, onDownload, onPreview,
             <th className="px-4 py-3 text-right">Actions</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-slate-100">
+        <tbody className="divide-y divide-line">
           {versions.map((v) => (
             <tr key={v.id}>
               <td className="whitespace-nowrap px-4 py-3 font-medium">
@@ -33,13 +33,13 @@ export function VersionTable({ versions, canModify, busy, onDownload, onPreview,
               </td>
               <td className="px-4 py-3">
                 <p className="max-w-xs truncate">{v.fileName}</p>
-                <p className="text-xs text-slate-500">{formatBytes(v.sizeBytes)}</p>
+                <p className="text-xs text-muted">{formatBytes(v.sizeBytes)}</p>
               </td>
-              <td className="px-4 py-3 text-slate-600">
+              <td className="px-4 py-3 text-muted">
                 <p>{v.uploadedBy.name}</p>
-                <p className="text-xs text-slate-500">{formatDate(v.createdAt)}</p>
+                <p className="text-xs text-muted">{formatDate(v.createdAt)}</p>
               </td>
-              <td className="max-w-xs px-4 py-3 text-slate-600">{v.changeNote ?? "-"}</td>
+              <td className="max-w-xs px-4 py-3 text-muted">{v.changeNote ?? "-"}</td>
               <td className="px-4 py-3">
                 <div className="flex justify-end gap-2">
                   {PREVIEWABLE_MIME_TYPES.includes(v.mimeType) && (

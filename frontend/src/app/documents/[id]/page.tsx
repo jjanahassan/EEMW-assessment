@@ -35,22 +35,28 @@ function DocumentView() {
   const [actionError, setActionError] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
 
-  const load = useCallback(async () => {
-    try {
-      const [d, v] = await Promise.all([documentsApi.get(id), documentsApi.versions(id)]);
-      setDoc(d.document);
-      setVersions(v.versions);
-      setLoadError(null);
-    } catch (err) {
-      setLoadError({ status: err instanceof ApiError ? err.status : 0, message: getErrorMessage(err) });
-    } finally {
-      setLoading(false);
-    }
-  }, [id]);
+    const [reloadKey, setReloadKey] = useState(0);
+    const reload = useCallback(() => setReloadKey((k) => k + 1), []); // call after any change to refetch
 
-  useEffect(() => {
-    void load();
-  }, [load]);
+    useEffect(() => {
+        let cancelled = false;
+        Promise.all([documentsApi.get(id), documentsApi.versions(id)])
+        .then(([d, v]) => {
+            if (cancelled) return;
+            setDoc(d.document);
+            setVersions(v.versions);
+            setLoadError(null);
+            setLoading(false);
+        })
+        .catch((err) => {
+            if (cancelled) return;
+            setLoadError({ status: err instanceof ApiError ? err.status : 0, message: getErrorMessage(err) });
+            setLoading(false);
+        });
+        return () => {
+        cancelled = true;
+        };
+    }, [id, reloadKey]);
 
   // Revoke the blob URL whenever the preview closes
   function closePreview() {
@@ -73,7 +79,7 @@ function DocumentView() {
   const download = (v: VersionSummary) =>
     run(`download-${v.versionNumber}`, async () => {
       saveBlob(await documentsApi.fetchFile(id, "download", v.versionNumber), v.fileName);
-      await load(); // the download counter changed
+      reload(); // the download counter changed
     });
 
   const openPreview = (v: VersionSummary) =>
@@ -86,7 +92,7 @@ function DocumentView() {
     if (!window.confirm(`Restore version ${v.versionNumber}? This creates a new version with the same file. History is kept.`)) return;
     return run(`restore-${v.versionNumber}`, async () => {
       await documentsApi.restore(id, v.versionNumber);
-      await load();
+      await reload();
     });
   };
 
@@ -95,12 +101,12 @@ function DocumentView() {
   if (loadError || !doc) {
     const status = loadError?.status;
     return (
-      <div className="mx-auto max-w-lg rounded-lg border border-slate-200 bg-white p-8 text-center shadow-sm">
+      <div className="mx-auto max-w-lg rounded-lg border border-line bg-surface p-8 text-center shadow-sm">
         <h1 className="text-lg font-semibold">
           {status === 403 ? "You do not have access to this document" : status === 404 ? "Document not found" : "Could not load the document"}
         </h1>
-        {status !== 403 && status !== 404 && <p className="mt-2 text-sm text-slate-600">{loadError?.message}</p>}
-        <Link href="/search" className="mt-4 inline-block text-sm font-medium text-indigo-600 hover:underline">
+        {status !== 403 && status !== 404 && <p className="mt-2 text-sm text-muted">{loadError?.message}</p>}
+        <Link href="/search" className="mt-4 inline-block text-sm font-medium text-accent hover:underline">
           Back to search
         </Link>
       </div>
@@ -114,7 +120,7 @@ function DocumentView() {
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/search" className="text-sm text-indigo-600 hover:underline">
+        <Link href="/search" className="text-sm text-accent hover:underline">
           Back to search
         </Link>
         <div className="mt-2 flex flex-wrap items-start justify-between gap-3">
@@ -149,8 +155,8 @@ function DocumentView() {
 
       {actionError && <Alert>{actionError}</Alert>}
 
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-        {doc.description && <p className="mb-4 whitespace-pre-line text-sm text-slate-700">{doc.description}</p>}
+      <section className="rounded-lg border border-line bg-surface p-5 shadow-sm">
+        {doc.description && <p className="mb-4 whitespace-pre-line text-sm text-fg">{doc.description}</p>}
         <dl className="grid gap-x-6 gap-y-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
           <Meta label="Uploaded by" value={doc.uploader.name} />
           <Meta label="Created" value={formatDate(doc.createdAt)} />
@@ -171,7 +177,7 @@ function DocumentView() {
         <VersionTable versions={versions} canModify={canModify} busy={busy} onDownload={download} onPreview={openPreview} onRestore={restore} />
       </section>
 
-      {canModify && <NewVersionForm documentId={id} onDone={load} />}
+      {canModify && <NewVersionForm documentId={id} onDone={reload} />}
 
       {preview && <PreviewModal {...preview} onClose={closePreview} />}
     </div>
@@ -181,8 +187,8 @@ function DocumentView() {
 function Meta({ label, value, title }: { label: string; value: string; title?: string }) {
   return (
     <div>
-      <dt className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</dt>
-      <dd className="mt-0.5 break-words text-slate-900" title={title}>
+      <dt className="text-xs font-medium uppercase tracking-wide text-muted">{label}</dt>
+      <dd className="mt-0.5 break-words text-fg" title={title}>
         {value}
       </dd>
     </div>

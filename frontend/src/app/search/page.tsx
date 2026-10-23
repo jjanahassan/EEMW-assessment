@@ -14,9 +14,9 @@ import { documentsApi } from "@/lib/endpoints";
 import type { SearchResult } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-interface View {
+interface Result {
+  query: string | null; // the query string these results belong to
   data: SearchResult | null;
-  loading: boolean;
   error: string | null;
 }
 
@@ -40,7 +40,6 @@ function SearchView() {
   const fileType = sp.get("fileType") ?? "";
   const sort = sp.get("sort") ?? "";
   const tagMode = sp.get("tagMode") === "any" ? "any" : "all";
-  const page = Math.max(1, Number(sp.get("page")) || 1);
   const tags = useMemo(() => (sp.get("tags") ?? "").split(",").filter(Boolean), [sp]);
   const hasFilters = Boolean(q || uploader || fileType || sort || tags.length);
 
@@ -55,29 +54,30 @@ function SearchView() {
     router.replace(qs ? `/search?${qs}` : "/search", { scroll: false });
   }
 
-  const [view, setView] = useState<View>({ data: null, loading: true, error: null });
-  const queryString = sp.toString();
+    const queryString = sp.toString();
+    const [result, setResult] = useState<Result>({ query: null, data: null, error: null });
+    // "loading" is derived: the results on screen belong to an older query
+    const loading = result.query !== queryString;
 
-  useEffect(() => {
-    const controller = new AbortController(); // cancels the previous request when the query changes
-    setView((v) => ({ ...v, loading: true, error: null }));
-    documentsApi
-      .search(queryString, controller.signal)
-      .then((data) => setView({ data, loading: false, error: null }))
-      .catch((err) => {
-        if (isAbort(err)) return;
-        setView((v) => ({ ...v, loading: false, error: getErrorMessage(err) }));
-      });
-    return () => controller.abort();
-  }, [queryString]);
+    useEffect(() => {
+        const controller = new AbortController(); // cancels the previous request when the query changes
+        documentsApi
+        .search(queryString, controller.signal)
+        .then((data) => setResult({ query: queryString, data, error: null }))
+        .catch((err) => {
+            if (isAbort(err)) return;
+            setResult((prev) => ({ query: queryString, data: prev.data, error: getErrorMessage(err) }));
+        });
+        return () => controller.abort();
+    }, [queryString]);
 
-  const { data, loading, error } = view;
+    const { data, error } = result;
 
   return (
     <div>
       <h1 className="text-2xl font-semibold">Search documents</h1>
 
-      <div className="mt-4 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <div className="mt-4 rounded-lg border border-line bg-surface p-4 shadow-sm">
         <DebouncedInput
           value={q}
           onCommit={(v) => update({ q: v.trim() || undefined })}
@@ -87,25 +87,25 @@ function SearchView() {
         />
         <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <div className="md:col-span-2">
-            <label htmlFor="filter-tags" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="filter-tags" className="mb-1 block text-sm font-medium text-fg">
               Tags
             </label>
             <TagInput id="filter-tags" value={tags} onChange={(next) => update({ tags: next.join(",") || undefined })} placeholder="Filter by tag" />
             {tags.length > 1 && (
-              <label className="mt-2 flex items-center gap-2 text-xs text-slate-600">
+              <label className="mt-2 flex items-center gap-2 text-xs text-muted">
                 <input type="checkbox" checked={tagMode === "any"} onChange={(e) => update({ tagMode: e.target.checked ? "any" : undefined, tags: tags.join(",") })} />
                 Match any tag (instead of all)
               </label>
             )}
           </div>
           <div>
-            <label htmlFor="filter-uploader" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="filter-uploader" className="mb-1 block text-sm font-medium text-fg">
               Uploaded by
             </label>
             <DebouncedInput id="filter-uploader" value={uploader} onCommit={(v) => update({ uploader: v.trim() || undefined })} placeholder="Name or email" className={inputClass} />
           </div>
           <div>
-            <label htmlFor="filter-type" className="mb-1 block text-sm font-medium text-slate-700">
+            <label htmlFor="filter-type" className="mb-1 block text-sm font-medium text-fg">
               File type
             </label>
             <select id="filter-type" value={fileType} onChange={(e) => update({ fileType: e.target.value || undefined })} className={inputClass}>
@@ -121,7 +121,7 @@ function SearchView() {
       </div>
 
       <div className="mt-6 flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-600" aria-live="polite">
+        <p className="text-sm text-muted" aria-live="polite">
           {data ? `${data.total} document${data.total === 1 ? "" : "s"}` : "\u00a0"}
         </p>
         <div className="flex items-center gap-3">
@@ -154,15 +154,15 @@ function SearchView() {
       {!data && loading && (
         <ul className="mt-4 space-y-3">
           {[0, 1, 2].map((i) => (
-            <li key={i} className="h-28 animate-pulse rounded-lg bg-slate-200" />
+            <li key={i} className="h-28 animate-pulse rounded-lg bg-line" />
           ))}
         </ul>
       )}
 
       {data && data.items.length === 0 && !loading && (
-        <div className="mt-8 rounded-lg border border-dashed border-slate-300 bg-white p-10 text-center">
-          <p className="font-medium text-slate-700">No documents found</p>
-          <p className="mt-1 text-sm text-slate-500">Try different words, fewer filters, or check the spelling.</p>
+        <div className="mt-8 rounded-lg border border-dashed border-line-strong bg-surface p-10 text-center">
+          <p className="font-medium text-fg">No documents found</p>
+          <p className="mt-1 text-sm text-muted">Try different words, fewer filters, or check the spelling.</p>
         </div>
       )}
 

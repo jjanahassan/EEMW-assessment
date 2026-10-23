@@ -6,3 +6,5 @@ export const ALLOWED_EXTENSIONS = ["pdf", "docx", "xlsx", "pptx", "txt", "png", 
 export const MAX_FILE_SIZE_MB = 25;
 export const MAX_TAGS = 10;
 export const PREVIEWABLE_MIME_TYPES = ["application/pdf", "image/png", "image/jpeg", "text/plain"];
+
+export const THEME_KEY = "docrepo.theme";

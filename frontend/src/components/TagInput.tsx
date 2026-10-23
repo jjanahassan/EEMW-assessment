@@ -62,9 +62,9 @@ export function TagInput({ id, value, onChange, placeholder }: Props) {
 
   return (
     <div className="relative">
-      <div className="flex flex-wrap items-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 focus-within:border-indigo-500 focus-within:ring-1 focus-within:ring-indigo-500">
+      <div className="flex flex-wrap items-center gap-2 rounded-md border border-line-strong bg-surface px-2 py-1.5 focus-within:border-accent focus-within:ring-1 focus-within:ring-accent">
         {value.map((tag) => (
-          <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
+          <span key={tag} className="inline-flex items-center gap-1 rounded-full bg-accent-soft px-2.5 py-0.5 text-xs font-medium text-accent">
             {tag}
             <button type="button" aria-label={`Remove ${tag}`} onClick={() => onChange(value.filter((t) => t !== tag))}>
               <X className="h-3 w-3" />
@@ -85,18 +85,18 @@ export function TagInput({ id, value, onChange, placeholder }: Props) {
         />
       </div>
       {shown.length > 0 && (
-        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-slate-200 bg-white py-1 shadow-lg">
+        <ul className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-md border border-line bg-surface py-1 shadow-lg">
           {shown.map((s) => (
             <li key={s}>
               {/* mouse down would blur the input and add the half-typed text first */}
-              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(s)} className="block w-full px-3 py-1.5 text-left text-sm hover:bg-slate-50">
+              <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => add(s)} className="block w-full px-3 py-1.5 text-left text-sm hover:bg-sunken">
                 {s}
               </button>
             </li>
           ))}
         </ul>
       )}
-      {problem && <p className="mt-1 text-xs text-red-600">{problem}</p>}
+      {problem && <p className="mt-1 text-xs text-danger-fg">{problem}</p>}
     </div>
   );
 }

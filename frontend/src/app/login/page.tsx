@@ -46,7 +46,7 @@ function LoginForm() {
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-lg border border-line bg-surface p-6 shadow-sm">
         <h1 className="text-xl font-semibold">Log in</h1>
         <form onSubmit={onSubmit} className="mt-4 space-y-4">
           {error && <Alert>{error}</Alert>}
@@ -60,16 +60,16 @@ function LoginForm() {
             Log in
           </Button>
         </form>
-        <p className="mt-4 text-sm text-slate-600">
+        <p className="mt-4 text-sm text-muted">
           No account yet?{" "}
-          <a href="/register" className="font-medium text-indigo-600 hover:underline">
+          <a href="/register" className="font-medium text-accent hover:underline">
             Register
           </a>
         </p>
       </div>
 
-      <div className="mt-4 rounded-lg border border-dashed border-slate-300 p-4 text-sm text-slate-600">
-        <p className="font-medium text-slate-700">Demo accounts (password: Password123!)</p>
+      <div className="mt-4 rounded-lg border border-dashed border-line-strong p-4 text-sm text-muted">
+        <p className="font-medium text-fg">Demo accounts (password: Password123!)</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {DEMO_ACCOUNTS.map((a) => (
             <button
@@ -79,7 +79,7 @@ function LoginForm() {
                 setEmail(a.email);
                 setPassword("Password123!");
               }}
-              className="rounded-full border border-slate-300 bg-white px-3 py-1 text-xs hover:bg-slate-50"
+              className="rounded-full border border-line-strong bg-surface px-3 py-1 text-xs hover:bg-sunken"
             >
               {a.label}
             </button>

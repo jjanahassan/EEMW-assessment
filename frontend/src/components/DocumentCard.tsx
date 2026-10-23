@@ -10,9 +10,9 @@ export function DocumentCard({ item, onTagClick }: { item: SearchItem; onTagClic
   const snippet = item.highlight?.snippet;
 
   return (
-    <article className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm transition hover:shadow-md">
+    <article className="rounded-lg border border-line bg-surface p-4 shadow-sm transition hover:shadow-md">
       <div className="flex items-start justify-between gap-3">
-        <Link href={`/documents/${item.id}`} className="text-base font-semibold text-indigo-700 hover:underline">
+        <Link href={`/documents/${item.id}`} className="text-base font-semibold text-accent hover:underline">
           {item.highlight ? <Highlight text={item.highlight.title} /> : item.title}
         </Link>
         <Badge tone={item.visibility === "restricted" ? "amber" : "green"}>
@@ -22,20 +22,20 @@ export function DocumentCard({ item, onTagClick }: { item: SearchItem; onTagClic
       </div>
 
       {(snippet || item.description) && (
-        <p className="mt-1 line-clamp-2 text-sm text-slate-600">{snippet ? <Highlight text={snippet} /> : item.description}</p>
+        <p className="mt-1 line-clamp-2 text-sm text-muted">{snippet ? <Highlight text={snippet} /> : item.description}</p>
       )}
 
       {item.tags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {item.tags.map((tag) => (
-            <button key={tag} type="button" onClick={() => onTagClick?.(tag)} className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs text-slate-700 hover:bg-indigo-100 hover:text-indigo-800">
+            <button key={tag} type="button" onClick={() => onTagClick?.(tag)} className="rounded-full bg-sunken px-2.5 py-0.5 text-xs text-fg hover:bg-highlight hover:text-fg">
               {tag}
             </button>
           ))}
         </div>
       )}
 
-      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
+      <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted">
         <span>
           {item.uploader.name} · {formatDate(item.createdAt)}
         </span>

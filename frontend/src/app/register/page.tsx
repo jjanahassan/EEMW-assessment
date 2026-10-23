@@ -48,7 +48,7 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="mx-auto max-w-md rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
+    <div className="mx-auto max-w-md rounded-lg border border-line bg-surface p-6 shadow-sm">
       <h1 className="text-xl font-semibold">Create an account</h1>
       <form onSubmit={onSubmit} className="mt-4 space-y-4">
         {error && <Alert>{error}</Alert>}
