@@ -201,28 +201,7 @@ flowchart TD
 
 Objects are created and connected in one place, `backend/src/container.ts` (the composition root), and receive their dependencies through constructors. That is what makes the services unit-testable with fake repositories.
 
-### 4.3 Upload flow
-
-```mermaid
-sequenceDiagram
-    participant B as Browser
-    participant A as API
-    participant S as Storage
-    participant D as PostgreSQL
-    participant R as Redis
-    B->>A: POST /api/documents (multipart, Bearer token)
-    A->>A: authenticate, stream to a temp file, validate the fields
-    A->>A: check extension, magic bytes, size; compute SHA-256
-    A->>S: save the file under a generated key
-    A->>D: one transaction: document, version, tags, permissions
-    alt the transaction fails
-        A->>S: delete the stored file
-    end
-    A->>R: bump the search cache version
-    A-->>B: 201 with the document
-```
-
-### 4.4 Design patterns used
+### 4.3 Design patterns used
 
 | Pattern | Where | Why |
 |---|---|---|
@@ -236,7 +215,7 @@ sequenceDiagram
 | Schema validation (DTOs) | Zod schemas | Input is validated and converted to typed data at the edge |
 | Transaction wrapper | `withTransaction` | All-or-nothing writes |
 
-### 4.5 Technology choices
+### 4.4 Technology choices
 
 | Choice | Reason |
 |---|---|
