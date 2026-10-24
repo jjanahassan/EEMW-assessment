@@ -7,13 +7,15 @@
   "type": "commonjs",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
+    "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "test": "vitest run",
     "migrate": "node-pg-migrate --envPath .env -j sql -m migrations",
     "migrate:create": "node-pg-migrate -j sql -m migrations create",
     "seed": "tsx src/db/seed.ts",
-    "seed:documents": "tsx src/db/seed-documents.ts"
+    "seed:documents": "tsx src/db/seed-documents.ts",
+    "migrate:deploy": "node-pg-migrate up -j sql -m migrations",
+    "type": "module"
   },
   "license": "ISC",
   "dependencies": {

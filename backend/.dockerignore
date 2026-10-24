@@ -1,0 +1,10 @@
+node_modules
+dist
+.env
+.env.*
+uploads
+tests
+postman
+requests.http
+coverage
+*.log
